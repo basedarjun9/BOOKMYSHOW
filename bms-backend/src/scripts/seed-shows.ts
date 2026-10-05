@@ -48,7 +48,7 @@ export const seedShow = async () => {
 //  const theatres = await TheaterModel.find({});
 
   
-  const movieIds = ["68e224451aeabaafaa43ac58", "68e224451aeabaafaa43ac57"];
+  const movieIds = ["6ac32b3228afd0afbe96e6aa", "6ac32b3228afd0afbe96e6a9"];
   const movies = await MovieModel.find({ _id: { $in: movieIds } });
   const theatres = await TheaterModel.find({ state: "West Bengal" });
 

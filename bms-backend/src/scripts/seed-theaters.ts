@@ -1,9 +1,9 @@
-import mongoose from "mongoose";
 import dotenv from "dotenv";
+dotenv.config();
+
+import mongoose from "mongoose";
 import { TheaterModel } from "../modules/theater/theater.model";
 import { config } from "../config/config";
-
-dotenv.config();
 
 mongoose
   .connect(config.databaseUrl as string)
@@ -114,6 +114,7 @@ mongoose
     ];
 
     const brands = ["PVR", "INOX", "Cinepolis"];
+
     const logos: Record<string, string> = {
       PVR: "https://res.cloudinary.com/amritrajmaurya/image/upload/v1751788726/omht27letnpbbaj2w0op.avif",
       INOX: "https://res.cloudinary.com/amritrajmaurya/image/upload/v1751788726/yxjgnxhxlccfdon3fyzg.avif",
@@ -124,25 +125,32 @@ mongoose
     const theatres = [];
 
     for (const city of cities) {
-      const numTheatres = Math.floor(Math.random() * 2) + 3; // 3 or 4 per city
+      const numTheatres = Math.floor(Math.random() * 2) + 3;
+
       for (let i = 0; i < numTheatres; i++) {
         const brand = brands[i % brands.length];
         const area = city.areas[i % city.areas.length];
+
         theatres.push({
           name: `${brand} ${area}`,
           location: `${area}, ${city.name}`,
           city: city.name,
-          state: city.state, // ✅ Added here
+          state: city.state,
           logo: logos[brand],
         });
       }
     }
 
+    // Remove old theatres
     await TheaterModel.deleteMany({});
+
+    // Insert new theatres
     await TheaterModel.insertMany(theatres);
 
     console.log(`✅ Seeded ${theatres.length} theatres successfully.`);
-    process.exit(0);
+
+    await mongoose.disconnect();
+    console.log("MongoDB disconnected.");
   })
   .catch((err) => {
     console.error("❌ MongoDB connection failed:", err);

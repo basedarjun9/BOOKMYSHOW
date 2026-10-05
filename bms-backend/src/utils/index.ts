@@ -1,12 +1,15 @@
 import { Types } from "mongoose";
+
 import { IMovie } from "../modules/movie/movie.interface";
 import { IShow } from "../modules/show/show.interface";
-import { IThreater } from "../modules/theater/theater.interface";
+import { ITheater } from "../modules/theater/theater.interface";
 
 type GroupedShow = {
   movie: Types.ObjectId | IMovie;
+
   theater: {
-    theaterDetails: Types.ObjectId | IThreater;
+    theaterDetails: Types.ObjectId | ITheater;
+
     shows: Array<{
       _id: string;
       date: string;
@@ -19,6 +22,7 @@ type GroupedShow = {
 
 export const isValidEmail = (email: string): boolean => {
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
   return emailRegex.test(email);
 };
 
@@ -72,18 +76,21 @@ export const generateSeatLayout = () => {
   ];
 };
 
-// Grouping function
-export const groupShowsByTheatreAndMovie = (shows: IShow[]): GroupedShow[] => {
+export const groupShowsByTheatreAndMovie = (
+  shows: IShow[]
+): GroupedShow[] => {
   const grouped: Record<string, GroupedShow> = {};
 
   shows.forEach((show) => {
-    const movieId = show.movie._id;
-    const theatreId = show.theater._id;
+    const movieId = show.movie.toString();
+    const theatreId = show.theater.toString();
+
     const key = `${movieId}_${theatreId}`;
 
     if (!grouped[key]) {
       grouped[key] = {
         movie: show.movie,
+
         theater: {
           theaterDetails: show.theater,
           shows: [],
