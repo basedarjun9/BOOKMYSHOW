@@ -1,8 +1,37 @@
 import React from "react";
-import { movies } from "../utils/constants";
-import { Link } from "react-router-dom";
-
+import { Link, useNavigate } from "react-router-dom";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { getRecommendedMovies } from "../apis";
+import { useLocation } from "../context/LocationContext"
 const Recommended = () => {
+
+const navigate = useNavigate()
+const {location}=useLocation()
+
+ const handleNavigate = (movie) => {
+    const originalTitle = movie.title;
+    const cleanedTitle = originalTitle.includes(":") ? originalTitle.replace(/:/g, "") : originalTitle;
+    const formattedTitle = cleanedTitle.replace(/\s+/g, "-").toLowerCase();
+    navigate(`/movies/${location}/${formattedTitle}/${movie._id}/ticket`)
+  }
+
+  //API CALL
+  const {
+    data: recMovies,
+    isError,
+    error,
+  } = useQuery({
+    queryKey: ["recommendedMovies"],
+    queryFn: getRecommendedMovies,
+    placeholderData: keepPreviousData,
+  });
+
+  console.log("recMovies:", recMovies);
+
+  if (isError) {
+    console.log("Something went wrong:", error);
+  }
+
   return (
     <div className="w-full py-6 bg-white">
       <div className="max-w-screen-xl mx-auto px-4">
@@ -12,22 +41,26 @@ const Recommended = () => {
             Recommended Movies
           </h1>
 
-          <Link
-              to="/movies"
-            className="text-md text-red-500 cursor-pointer hover:underline">
-          See All
-           </Link>
+          <span
+            onClick={()=>navigate("/movies")}
+            className="text-md text-red-500 cursor-pointer hover:underline"
+          >
+            See All
+          </span>
         </div>
 
         <div className="flex flex-wrap justify-center gap-4">
-          {movies.map((movie) => (
+
+          {recMovies?.data?.topMovies.map((movie,i) => (
+
             <div
-              key={movie.id}
+              key={movie._id} onClick={()=>handleNavigate(movie)}
               className="w-[200px] rounded overflow-hidden cursor-pointer"
             >
+
               <div className="relative">
                 <img
-                  src={movie.img}
+                  src={movie.posterUrl}
                   alt={movie.title}
                   className="w-full h-[260px] object-cover rounded"
                 />
@@ -44,11 +77,14 @@ const Recommended = () => {
                 </h3>
 
                 <p className="text-md text-gray-500">
-                  {movie.genre.replaceAll("/", " | ")}
+                  {movie.genre?.join(" | ")}
                 </p>
               </div>
+
             </div>
+
           ))}
+
         </div>
 
       </div>

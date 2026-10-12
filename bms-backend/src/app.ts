@@ -27,7 +27,7 @@ app.use(globalErrorHandler)
 
 app.get("/", (_, res) => {
   res.json({
-    message: "Welcome to BookMyScreen APIss",
+    message: "Welcome to BookMyScreen APIssssss",
   });
 });
 

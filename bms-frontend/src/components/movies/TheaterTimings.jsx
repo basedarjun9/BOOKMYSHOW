@@ -1,21 +1,33 @@
 import { useState } from "react";
 import dayjs from "dayjs";
 import { theatres } from "../../utils/constants";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { getShowsByMovieAndLocation } from "../../apis";
+import { useLocation } from "../../context/LocationContext";
+import { useNavigate } from "react-router-dom";
+import SeatLayout from "../../pages/SeatLayout";
 
-const TheaterTimings = () => {
+const TheaterTimings = ({movieId}) => {
+   const { location } = useLocation();
+   const navigate = useNavigate()
   const today = dayjs();
-
+  
   const [selectedDate, setSelectedDate] = useState(today);
+    const formattedDate = selectedDate.format("DD-MM-YYYY");
 
-  const next7days = Array.from(
-    { length: 7 },
-    (_, i) => today.add(i, "day")
-  );
+  const next7days = Array.from({ length: 7 },(_, i) => today.add(i, "day"));
+
+    const { data: showData, isLoading, isError } = useQuery({
+    queryKey : ["show", movieId, location, formattedDate],
+    queryFn : async () => await getShowsByMovieAndLocation(movieId, location, formattedDate),
+    placeholderData : keepPreviousData,
+    select : (res) => res.data
+  })
+  console.log(showData)
 
   return (
     <>
       <hr className="my-2 border-gray-200" />
-
       {/* Dates */}
       <div className="flex items-center justify-center gap-2 mb-4 overflow-x-auto py-4 px-2">
         {next7days.map((date, i) => {
@@ -48,7 +60,14 @@ const TheaterTimings = () => {
       </div>
 {/* Theatres */}
 <div className="max-w-5xl mx-auto px-4 mb-10">
-  {theatres.map((theatre, i) => (
+  {
+          showData?.length === 0 && (
+            <div className="text-center text-gray-500">
+              No shows available for the selected date.
+              </div>
+          )
+        }
+  {showData?.map((curr, i) => (
     <div
       key={i}
       className="py-5 border-b border-gray-200"
@@ -56,45 +75,40 @@ const TheaterTimings = () => {
       {/* Theatre Information */}
       <div className="flex items-start gap-3 mb-3">
         <img
-          src={theatre.img}
-          alt={theatre.name}
+          src={curr.theater.theaterDetails.logo}
+          alt="logo"
           className="w-8 h-8 object-contain"
         />
 
         <div>
           <p className="font-semibold text-sm">
-            {theatre.name}
+            {curr.theater.theaterDetails.name}
           </p>
 
           <p className="text-xs text-gray-500">
-            {theatre.cancellation}
+            Allows Cancellation
           </p>
 
-          <p className="text-xs text-gray-400">
-            {theatre.distance}
-          </p>
         </div>
       </div>
 
       {/* Timings - BELOW THEATRE */}
       <div className="flex flex-wrap gap-3 ml-11">
-        {theatre.timings.map((slot, k) => (
-          <button
-            key={k}
-            className="border border-gray-300 rounded-lg
-                       px-6 py-2 text-sm
-                       flex flex-col items-center justify-center
-                       cursor-pointer hover:bg-gray-100"
-          >
-            <span className="leading-tight font-semibold">
-              {slot.time}
-            </span>
-
-            <span className="text-[10px] text-gray-500 font-black">
-              {slot.label}
-            </span>
-          </button>
-        ))}
+        {
+          curr.theater.shows.map((slot, i) => {
+                      const theaterId = curr.theater.theaterDetails._id;
+                      const movieName = curr.movie.title;
+                      return (
+                        <button 
+                        onClick={() => 
+                          navigate(`/movies/${movieId}/${movieName}/${location}/theater/${theaterId}/show/${slot._id}/seat-layout`)}
+                        key={i} className="border cursor-pointer hover:bg-gray-100 border-gray-300 rounded-[16px] px-12 py-2 text-sm flex flex-col items-center justify-center">
+                            <span className="leading-tight font-semibold">{slot.startTime}</span>
+                            <span className="text-[10px] text-gray-500 font-black">{slot.audioType.toUpperCase()}</span>
+                        </button>
+        )
+        })
+        }
       </div>
     </div>
   ))}
