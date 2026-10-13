@@ -1,6 +1,8 @@
 import app from "./app";
 import {config} from "./config/config"
 import connectDB from "./config/db"
+import cookieParser from "cookie-parser";
+app.use(cookieParser());
 
 const startServer = async () => {
   const port = config.port;

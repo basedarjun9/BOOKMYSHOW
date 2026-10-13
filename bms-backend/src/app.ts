@@ -2,6 +2,7 @@ import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import cookieParser from "cookie-parser";
+
 import router from "./routes";
 import { globalErrorHandler } from "./middlewares/error.middleware";
 

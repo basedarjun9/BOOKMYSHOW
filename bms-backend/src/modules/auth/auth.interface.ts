@@ -12,7 +12,7 @@ export interface IRefreshTokenPayload {
 }
 
 export interface ITokenPayload {
-  _id?: string | undefined;
+  id?: string | undefined;
   email?: string;
   phone?: string;
   role?: string;

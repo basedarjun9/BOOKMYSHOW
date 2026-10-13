@@ -29,20 +29,25 @@ export const getAllUsers = async (
   }
 };
 
-// Get Single User
+// Get Current Logged-in User
 export const getUserById = async (
   req: Request,
   res: Response,
   next: NextFunction
-) => {
+): Promise<void> => {
   try {
-    const user = await UserService.getUserById(req.params.id);
-
-    if (!user) {
-       res.status(404).json({ message: "User not found" });
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "User not authenticated",
+      });
+      return;
     }
 
-    res.status(200).json(user);
+    res.status(200).json({
+      success: true,
+      user: req.user,
+    });
   } catch (error) {
     next(error);
   }

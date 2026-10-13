@@ -5,6 +5,6 @@ export interface IUser {
   phone?: string,
   role: 'admin' | 'user';
   activateUser?: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt?: Date;
+  updatedAt?: Date;
 }
