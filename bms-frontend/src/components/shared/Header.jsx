@@ -4,9 +4,13 @@ import {FaSearch} from "react-icons/fa"
 import { useLocation } from '../../context/LocationContext';
 import map from "../../assets/pin.gif"
 import {useNavigate} from "react-router-dom"
+import SignInModel from './SignInModel';
+import { useAuth } from "../../context/AuthContext";
+
 const Header = () => {
   
    const {location,loading,error}= useLocation()
+   const {toggleModal} = useAuth();
    const navigate=useNavigate()
 
 
@@ -31,7 +35,7 @@ const Header = () => {
             {loading && <img src={map} alt="loading" className="w-10 h-10"/>}
            {location && <p>{location}&nbsp; ▼</p> }
            </div>
-        <button className="bg-[#f84464] cursor-pointer text-white px-4 py-1.5 rounded text-sm">
+        <button onClick={() => toggleModal()}    className="bg-[#f84464] cursor-pointer text-white px-4 py-1.5 rounded text-sm">
             Sign in
         </button>
         </div>
@@ -57,6 +61,7 @@ const Header = () => {
       </div>
      </div>
     </div>
+    <SignInModel/>
     </div>
   )
 }
