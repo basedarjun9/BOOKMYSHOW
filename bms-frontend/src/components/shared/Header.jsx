@@ -1,6 +1,6 @@
 import React from 'react'
 import mainLogo from "../../assets/main-icon.png";
-import {FaSearch} from "react-icons/fa"
+import { FaSearch, FaUser } from "react-icons/fa";
 import { useLocation } from '../../context/LocationContext';
 import map from "../../assets/pin.gif"
 import {useNavigate} from "react-router-dom"
@@ -10,10 +10,20 @@ import { useAuth } from "../../context/AuthContext";
 const Header = () => {
   
    const {location,loading,error}= useLocation()
-   const {toggleModal} = useAuth();
+   const {toggleModal,auth,user} = useAuth();
    const navigate=useNavigate()
 
+     const handleProfileClick = () => {
+    console.log("Auth:", auth);
+    console.log("User object:", user);
+    console.log("User ID:", user?._id);
 
+    if (user?._id) {
+      navigate(`/profile/${user._id}`);
+    } else {
+      console.error("User ID is missing. Please check AuthContext.");
+    }
+  };
 
   return (
     <div className='w-full text-sm bg-white'>
@@ -29,20 +39,42 @@ const Header = () => {
             <FaSearch className="absolute right-2 top-2.5 text-gray-500"/>
             </div>
             </div>
-       {/*Right Part*/} 
-         <div className="flex items-center space-x-6">
-           <div className="text-sm font-medium cursor-pointer">
-            {loading && <img src={map} alt="loading" className="w-10 h-10"/>}
-           {location && <p>{location}&nbsp; ▼</p> }
-           </div>
-        <button onClick={() => toggleModal()}    className="bg-[#f84464] cursor-pointer text-white px-4 py-1.5 rounded text-sm">
-            Sign in
-        </button>
+         {/* Right Part */}
+          <div className="flex item-center space-x-6">
+            <div className="text-sm font-medium cursor-pointer mt-2">
+              {loading && <img src={map} alt="loading..." className="w-10 h-10" />}
+              {location && <p>{location} &nbsp; ▼</p>}
+            </div>
+            {
+              auth ? (
+                  <>
+                    <span
+                onClick={() => {
+                  if (user?._id) {
+                    navigate(`/profile/${user._id}`);
+                  } else {
+                    console.error("User ID is missing:", user);
+                  }
+                }}
+                className="text-sm -ml-3 font-normal cursor-pointer hover:text-red-500"
+              >
+                Hi, {user ? user.name : "Test User"} &nbsp; ▼
+              </span>
+                  </>
+              ) : (
+                <button
+              onClick={() => toggleModal()}
+              className="bg-[#f84464] cursor-pointer
+                    text-white px-4 py-1.5 rounded text-sm"
+            >
+              Sign in
+            </button>
+              )
+            }
+          </div>
         </div>
       </div>
-     </div>
-
-     {/*Bottom Navbar*/} 
+      {/* Bottom Navbar */}
      <div className="bg-stone-300 px-4 md:px-8">
      <div className="max-w-screen-xl mx-auto flex justify-between items-center py-2 text-gray-700">
       <div className="flex items-center space-x-6 font-medium">

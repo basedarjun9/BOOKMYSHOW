@@ -6,6 +6,12 @@ const StepAccountCreation = () => {
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
 
+  const { activateUserRequest } = useAuth();
+
+  const handleActivateAccount = (e) => {
+    e.preventDefault();
+    activateUserRequest({name, phone});
+  }
 
   return (
     <div className="flex flex-col gap-3 px-10 py-6">

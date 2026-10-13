@@ -2,10 +2,12 @@ import React from 'react'
 import { useCountdown } from "../../hooks/useCountDown";
 import { useState,useRef } from 'react';
 import { IoClose } from "react-icons/io5";
+import { useAuth } from "../../context/AuthContext";
 
     const StepOTP = ({onNext}) => {
     const [otpArray, setOtpArray] = useState(new Array(4).fill(""));
     const inputRef = useRef([]);
+    const { verifyOtpRequest } = useAuth();
 
     const { displayTime, isExpired } = useCountdown({
         initialTimeInSeconds : 2 * 60,
@@ -14,14 +16,33 @@ import { IoClose } from "react-icons/io5";
 
     const handleVerifyOtp=(e)=>{
         e.preventDefault();
-        onNext();
+        const otp = parseInt(otpArray.join(""), 10);
+        verifyOtpRequest(otp, onNext);
     }
 
     const handleResendOtp = (e) => {
         e.preventDefault();
     }
 
-  return (
+
+     const handleOtpChange = ({ target }, index) => {
+        const { value } = target;
+        if(!isNaN(parseInt(value))){
+          setOtpArray([...otpArray.map((d, idx) => (idx === index ? value : d))]);
+
+          // Focus on next input
+          if(value !== "" && index < inputRef.current.length - 1){
+            inputRef.current[index + 1]?.focus();
+          }
+        }
+    }
+
+    const handleClearOtp = () => {
+      setOtpArray(new Array(4).fill(""));
+      inputRef.current[0]?.focus();
+    }
+
+   return (
     <div className='flex flex-col gap-3 px-10 py-6'>
         <h2 className='text-center text-lg font-semibold'>Enter the OTP</h2>
         <p className='text-center text-sm text-gray-500'>If you don't have an account, we'll create one for you.</p>
@@ -41,7 +62,7 @@ import { IoClose } from "react-icons/io5";
             />
         ))}
 
-         <button type="button" className="w-8 cursor-pointer h-8 border border-gray-200 items-center
+         <button onClick={handleClearOtp} type="button" className="w-8 cursor-pointer h-8 border border-gray-200 items-center
         text-[#f74565] ml-1 font-bold rounded-md">
             <IoClose size={24} className="inline" />
         </button>
