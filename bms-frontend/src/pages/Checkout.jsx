@@ -1,327 +1,216 @@
 import React, { useEffect, useState } from "react";
 import Header from "../components/seat-layout/Header";
 import dayjs from "dayjs";
-import customParseFormat from "dayjs/plugin/customParseFormat";
-
+import { calculateTotalPrice, groupSeatsByType } from "../utils";
 import { FaInfoCircle } from "react-icons/fa";
 import { BiSolidOffer } from "react-icons/bi";
-import { CiUser, CiCircleQuestion } from "react-icons/ci";
-
-dayjs.extend(customParseFormat);
+import { CiCircleQuestion, CiUser } from "react-icons/ci";
+import { useAuth } from "../context/AuthContext";
+import { useLocation } from "../context/LocationContext";
+import { useSeatContext } from "../context/SeatContext";
+import { useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 
 const Checkout = () => {
+  const [timeLeft, setTimeLeft] = useState(300);
 
-  const showData = {
-    _id: "show123",
-    date: "12-10-2026",
-    startTime: "07:30 PM",
-    audioType: "Dolby 7.1",
+  const navigate = useNavigate();
+  const { user } = useAuth();
+  const { location } = useLocation();
+  const { selectedSeats, shows: showData } = useSeatContext();
 
-    movie: {
-      title: "Meesaya Murukku 2",
-      certification: "UA13+",
-      languages: ["Tamil", "Telugu"],
-      format: ["2D", "IMAX"],
-      posterUrl:
-        "https://res.cloudinary.com/dwfajb0oe/image/upload/v1791611209/meesaya_murukku2.png",
-    },
+  const { base, tax, total } = calculateTotalPrice(selectedSeats);
 
-    theater: {
-      name: "PVR Icon",
-      city: "Chennai",
-      state: "Tamil Nadu",
-    },
-  };
-
-
-  const selectedSeats = [
-    { type: "Gold", seatNumber: "B5", price: 200 },
-    { type: "Gold", seatNumber: "B6", price: 200 },
-  ];
-
-
-  const user = {
-    name: "Arjun",
-    phone: "9025585831",
-    email: "arjunmoorthy2026@gmail.com",
-  };
-
-  const location = "Chennai, Tamil Nadu";
-
-
-  // ==========================================
-  // GROUP SEATS BY TYPE
-  // ==========================================
-
-  const groupSeatsByType = (seats) => {
-    return Object.values(
-      seats.reduce((groups, seat) => {
-        if (!groups[seat.type]) {
-          groups[seat.type] = {
-            type: seat.type,
-            seats: [],
-          };
+  // Countdown timer
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(interval);
+          toast.error("Time expired!");
+          navigate("/");
+          return 0;
         }
 
-        groups[seat.type].seats.push(seat.seatNumber);
+        return prev - 1;
+      });
+    }, 1000);
 
-        return groups;
-      }, {})
-    );
+    return () => clearInterval(interval);
+  }, [navigate]);
+
+  // Validate checkout data
+  useEffect(() => {
+    if (!showData || selectedSeats.length === 0) {
+      navigate("/");
+    }
+  }, [showData, selectedSeats.length, navigate]);
+
+  // Placeholder action instead of payment processing
+  const handleBookSeat = () => {
+    toast("Payment integration is currently disabled.");
   };
 
-  const base = selectedSeats.reduce(
-    (sum, seat) => sum + seat.price,
-    0
-  );
-
-  const tax = Math.round(base * 0.05);
-  const total = base + tax;
-
-  // ==========================================
-  // CHECKOUT UI
-  // ==========================================
-
   return (
-    <div className="min-h-screen w-full bg-gray-50">
-      {/* Header */}
+    <div className="min-h-screen w-full bg-white">
       <Header type="checkout" />
 
-       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6">
-        <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px]">
-          {/* ================================== */}
-          {/* LEFT SECTION */}
-          {/* ================================== */}
+      <div className="max-w-6xl mx-auto px-4 py-6">
+        <p className="text-red-500 text-center mb-3 text-lg border rounded-[14px] border-dashed py-2 font-semibold">
+          Time left: {String(Math.floor(timeLeft / 60)).padStart(2, "0")}:
+          {String(timeLeft % 60).padStart(2, "0")}
+        </p>
 
-          <div className="space-y-5">
+        <div className="flex flex-col lg:flex-row gap-6">
+          {/* Left Section */}
+          <div className="flex-1 space-y-4">
             {/* Movie Details */}
-            <div className="flex gap-4 rounded-2xl border border-gray-200 bg-white p-4 sm:p-5">
+            <div className="flex gap-4">
               <img
-                src={showData.movie.posterUrl}
-                alt={showData.movie.title}
-                className="h-28 w-20 shrink-0 rounded-lg object-cover"
+                src={showData?.movie?.posterUrl}
+                alt={showData?.movie?.title}
+                className="w-[60px] h-[90px] rounded object-cover"
               />
 
-              <div className="min-w-0 flex-1">
-                <h2 className="text-lg font-bold text-gray-900 sm:text-xl">
-                  {showData.movie.title}
-                </h2>
+              <div>
+                <h3 className="font-semibold text-lg">
+                  {showData?.movie?.title}
+                </h3>
 
-                <p className="mt-1 text-xs leading-5 text-gray-500 sm:text-sm">
-                  {showData.movie.certification} ·{" "}
-                  {showData.movie.languages.join(", ")} ·{" "}
-                  {showData.movie.format.join(", ")}
+                <p className="text-sm text-gray-600">
+                  {showData?.movie?.certification} •{" "}
+                  {showData?.movie?.languages?.join(", ")} •{" "}
+                  {showData?.movie?.format?.join(", ")}
                 </p>
 
-                <p className="mt-2 text-sm font-medium text-gray-800">
-                  {showData.theater.name}
-                </p>
-
-                <p className="text-xs text-gray-500 sm:text-sm">
-                  {showData.theater.city},{" "}
-                  {showData.theater.state}
+                <p className="text-sm text-gray-600">
+                  {showData?.theater?.name}, {showData?.theater?.city},{" "}
+                  {showData?.theater?.state}
                 </p>
               </div>
             </div>
 
             {/* Show Details */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-gray-200 pb-4">
-                <p className="text-sm font-medium text-gray-700 sm:text-base">
-                  {dayjs(
-                    showData.date,
-                    "DD-MM-YYYY"
-                  ).format("D MMMM YYYY")}
-                </p>
-
-                <span className="rounded-lg bg-green-50 px-3 py-1 text-xs font-semibold text-green-700">
-                  {showData.audioType}
+            <div className="border border-gray-200 rounded-[24px] px-6 py-5">
+              <p className="text-md font-medium border-b pb-5 border-gray-200">
+                {showData?.date
+                  ? dayjs(showData.date, "DD-MM-YYYY")
+                      .format("D MMMM YYYY")
+                      .split(" ")
+                      .slice(0, 2)
+                      .join(" ")
+                  : ""}
+                &nbsp;•{" "}
+                <span className="font-semibold">
+                  {showData?.startTime}
                 </span>
-              </div>
+              </p>
 
-              <div className="mt-5 flex items-start justify-between gap-4">
+              <div className="flex items-center justify-between mt-4 mb-4">
                 <div>
-                  <h3 className="font-semibold text-gray-900">
-                    {selectedSeats.length}.Ticket
-                  </h3>
-
-                  <p className="mt-1 text-sm text-gray-500">
-                    Show time: {showData.startTime}
+                  <p className="text-md mt-2 font-semibold">
+                    {selectedSeats.length} ticket
+                    {selectedSeats.length !== 1 ? "s" : ""}
                   </p>
 
-                  <div className="mt-3 space-y-2">
-                    {groupSeatsByType(selectedSeats).map(
-                      ({ type, seats }) => (
-                        <p
-                          key={type}
-                          className="text-sm text-gray-600"
-                        >
-                          <span className="font-medium text-gray-800">
-                            {type}
-                          </span>{" "}
-                          · Seats: {seats.join(", ")}
-                        </p>
-                      )
-                    )}
+                  <div className="text-sm text-gray-500">
+                    {groupSeatsByType(selectedSeats).map(({ type, seats }) => (
+                      <p key={type} className="font-medium">
+                        {type} - {seats.join(", ")}
+                      </p>
+                    ))}
                   </div>
                 </div>
 
-                <div className="shrink-0 text-right">
-                  <p className="text-xs text-gray-500">
-                    Ticket amount
-                  </p>
-
-                  <p className="mt-1 text-lg font-bold text-gray-900">
-                    ₹{base}
-                  </p>
-                </div>
+                <p className="text-md font-semibold mt-2">
+                  <span className="text-gray-700">₹</span>
+                  {base}
+                </p>
               </div>
             </div>
 
             {/* Cancellation Notice */}
-            <div className="flex items-start gap-3 rounded-2xl border border-amber-200 bg-amber-50 p-5 text-sm text-amber-800">
-              <FaInfoCircle className="mt-0.5 shrink-0" size={20} />
-
-              <p>
-                <span className="font-semibold">
-                  Cancellation policy
-                </span>
-
-                <br />
-
-                No cancellation or refund is available after payment.
-              </p>
+            <div className="bg-white border rounded-[24px] border-gray-200 text-yellow-800 text-sm px-6 py-5 tracking-wide">
+              <span className="font-medium flex items-center gap-2">
+                <FaInfoCircle size={24} />
+                No cancellation or refund available after payment.
+              </span>
             </div>
 
             {/* Offers */}
-            <button
-              type="button"
-            
-              className="flex w-full items-center justify-between rounded-2xl border border-gray-200 bg-white p-5 text-left transition hover:border-gray-400"
-            >
-              <span className="flex items-center gap-3 text-sm font-semibold text-gray-800">
-                <BiSolidOffer size={22} className="text-pink-500" />
+            <div className="flex items-center justify-between border rounded-[24px] border-gray-200 px-6 py-5">
+              <p className="font-medium text-sm flex items-center gap-2">
+                <BiSolidOffer size={20} />
                 Available Offers
-              </span>
+              </p>
 
-              <span className="text-sm font-semibold text-blue-600">
-                View offers →
-              </span>
-            </button>
+              <p className="text-sm text-center text-blue-600 font-medium cursor-pointer">
+                View all offers
+              </p>
+            </div>
           </div>
 
-          {/* RIGHT SECTION */}
+          {/* Right Section */}
+          <div className="w-full lg:w-[300px] space-y-4">
+            <h4 className="font-medium text-gray-900 text-lg">
+              Payment Summary
+            </h4>
 
-          <div className="space-y-5">
-            {/* Payment Summary */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-              <h3 className="text-lg font-bold text-gray-900">
-                Payment Summary
-              </h3>
+            <div className="border border-gray-200 rounded-[24px] px-6 py-7 space-y-2">
+              <div className="flex justify-between text-md">
+                <span className="text-sm text-gray-500">Order amount</span>
+                <span>₹{base}</span>
+              </div>
 
-              <div className="mt-5 space-y-4">
-                <div className="flex justify-between gap-3 text-sm">
-                  <span className="text-gray-500">
-                    Order amount ({selectedSeats.length} tickets)
-                  </span>
+              <div className="flex justify-between text-md pb-4">
+                <span className="font-semibold text-sm">
+                  Taxes & fees (5%)
+                </span>
+                <span>₹{tax}</span>
+              </div>
 
-                  <span className="font-medium text-gray-900">
-                    ₹200
-                  </span>
-                </div>
-
-                <div className="flex justify-between gap-3 text-sm">
-                  <span className="text-gray-500">
-                    Taxes & fees (5%)
-                  </span>
-
-                  <span className="font-medium text-gray-900">
-                    ₹20
-                  </span>
-                </div>
-
-                <div className="border-t border-dashed border-gray-200 pt-4">
-                  <div className="flex items-center justify-between gap-3">
-                    <span className="font-bold text-gray-900">
-                      Total payable
-                    </span>
-
-                    <span className="text-xl font-bold text-gray-900">
-                      ₹220
-                    </span>
-                  </div>
-                </div>
+              <div className="flex justify-between text-md font-semibold border-t border-gray-200 pt-4">
+                <span>To be paid</span>
+                <span>₹{total}</span>
               </div>
             </div>
 
             {/* User Details */}
-            <div className="rounded-2xl border border-gray-200 bg-white p-5 sm:p-6">
-              <h3 className="mb-4 text-lg font-bold text-gray-900">
-                Your Details
-              </h3>
+            <h4 className="text-lg font-medium">Your details</h4>
 
-              <div className="flex items-start gap-3">
-                <CiUser
-                  size={26}
-                  className="shrink-0 text-gray-500"
-                />
+            <div className="border flex items-start gap-3 border-gray-200 rounded-[24px] px-6 py-7">
+              <CiUser size={24} />
 
-                <div className="min-w-0 space-y-1">
-                  <p className="break-words text-sm font-semibold text-gray-900">
-                    {user.name}
-                  </p>
-
-                  <p className="break-words text-sm text-gray-600">
-                    +91 {user.phone}
-                  </p>
-
-                  <p className="break-words text-sm text-gray-600">
-                    {user.email}
-                  </p>
-
-                  <p className="break-words text-sm text-gray-500">
-                    {location}
-                  </p>
-                </div>
+              <div className="-mt-1">
+                <p className="text-sm font-medium">{user?.name}</p>
+                <p className="text-sm text-gray-600">
+                  +91-{user?.phone}
+                </p>
+                <p className="text-sm text-gray-600">{user?.email}</p>
+                <p className="text-sm text-gray-600">{location}</p>
               </div>
             </div>
 
             {/* Terms and Conditions */}
+            <div className="border border-gray-200 rounded-[24px] px-6 py-5">
+              <p className="text-sm font-medium cursor-pointer flex items-center gap-2">
+                <CiCircleQuestion size={24} />
+                Terms and conditions
+              </p>
+            </div>
+
+            {/* Placeholder Button */}
             <button
               type="button"
-            
-              className="flex w-full items-center gap-3 rounded-2xl border border-gray-200 bg-white p-5 text-left transition hover:border-gray-400"
+              onClick={handleBookSeat}
+              className="w-full flex justify-between items-center bg-black rounded-[24px] px-6 py-4 cursor-pointer"
             >
-              <CiCircleQuestion
-                size={24}
-                className="shrink-0 text-gray-500"
-              />
+              <p className="text-white font-bold">
+                ₹{total} <span className="text-xs font-medium">TOTAL</span>
+              </p>
 
-              <span className="text-sm font-semibold text-gray-800">
-                Terms and conditions
-              </span>
+              <p className="text-white font-medium">Proceed To Pay</p>
             </button>
-
-            {/* Payment Button */}
-            <button
-              
-              className="flex w-full items-center justify-between gap-3 rounded-xl bg-[#000000] px-5 py-4 text-white shadow-sm transition hover:bg-[#e63756] disabled:cursor-not-allowed disabled:bg-gray-400"
-            >
-              <div className="text-left">
-                <p className="text-lg font-bold">
-                  ₹{total}
-                </p>
-
-                <p className="text-[10px] font-medium tracking-wider">
-                  TOTAL AMOUNT
-                </p>
-              </div>
-
-              <span className="text-sm font-bold sm:text-base">
-                Proceed to Pay →
-              </span>
-            </button>
-
           </div>
         </div>
       </div>

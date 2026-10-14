@@ -6,7 +6,7 @@ import App from './App.jsx'
 import { LocationProvider } from './context/LocationContext.jsx'
 import { QueryClientProvider,QueryClient } from '@tanstack/react-query'
 import { AuthProvider } from "./context/AuthContext.jsx";
-
+import { SeatContextProvider } from "./context/SeatContext.jsx";
 const queryClient = new QueryClient({
 defaultOptions:{
   queries:{
@@ -25,8 +25,9 @@ createRoot(document.getElementById('root')).render(
       <QueryClientProvider client={queryClient}>
       <LocationProvider>
      <AuthProvider>
-          
+          <SeatContextProvider>
             <App />
+            </SeatContextProvider>
           </AuthProvider>
     </LocationProvider>
    </QueryClientProvider>

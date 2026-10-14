@@ -4,13 +4,12 @@ import nodemailer from "nodemailer";
 import Mailgen from "mailgen";
 
 // Generate OTP
-export const generateOTP = () => {
-  const otp = crypto.randomInt(1000, 9999);
-  return otp;
+export const generateOTP = (): number => {
+  return crypto.randomInt(1000, 10000);
 };
 
 // Hash OTP
-export const hashOTP = (data: string) => {
+export const hashOTP = (data: string): string => {
   if (!config.hashingSecret) {
     throw new Error("Hashing secret is not defined");
   }
@@ -22,23 +21,24 @@ export const hashOTP = (data: string) => {
 };
 
 // Verify OTP
-export const verifyOTP = (hashedOTP: string, data: string) => {
+export const verifyOTP = (
+  hashedOTP: string,
+  data: string
+): boolean => {
   const newHashedOTP = hashOTP(data);
   return newHashedOTP === hashedOTP;
 };
 
-// Send OTP to user via email
-
-const _config = {
-  service: "gmail" as string,
+// Gmail SMTP configuration
+const transporter = nodemailer.createTransport({
+  service: "gmail",
   auth: {
     user: config.emailUsername,
     pass: config.emailPassword,
   },
-};
+});
 
-const transporter = nodemailer.createTransport(_config);
-
+// Email template
 const mailGenerator = new Mailgen({
   theme: "default",
   product: {
@@ -48,36 +48,43 @@ const mailGenerator = new Mailgen({
   },
 });
 
-export const sendOTPToEmail = async (email: string, otp: number) => {
-  const emailTemp:any = {
+// Send OTP to user via email
+export const sendOTPToEmail = async (
+  email: string,
+  otp: number
+): Promise<string> => {
+  const emailTemplate = {
     body: {
-      name: "",
-      intro: "Welcome to bookMyScreen! We're very excited to have you on board.",
+      name: "User",
+      intro: "Welcome to bookMyScreen! We're excited to have you on board.",
       action: {
         instructions: "To verify your account, please use the following OTP:",
         button: {
-          color: "#323232", // Optional action button color
-          text: otp,
-          link: "",
+          color: "#323232",
+          text: String(otp),
+          link: "https://amitr.raj.vercel.app",
         },
       },
       outro:
-        "This OTP will expire in a short time (2 mins) for security reasons. If you did not request this OTP, please ignore this email.",
+        "This OTP expires in 2 minutes. If you did not request it, please ignore this email.",
     },
   };
 
+  const html = mailGenerator.generate(emailTemplate);
 
+  const message = {
+    from: config.emailUsername,
+    to: email,
+    subject: "Your OTP for bookMyScreen",
+    html,
+  };
 
-const mail = mailGenerator.generate(emailTemp);
+  const info = await transporter.sendMail(message);
 
-let message = {
-  from: config.emailUsername,
-  to: email,
-  subject: "Your OTP for bookMyScreen",
-  html: mail,
-};
+  // Debug email delivery
+  console.log("Email accepted:", info.accepted);
+  console.log("Email rejected:", info.rejected);
+  console.log("Message ID:", info.messageId);
 
-const info = await transporter.sendMail(message);
-
-return info.messageId;
+  return info.messageId;
 };

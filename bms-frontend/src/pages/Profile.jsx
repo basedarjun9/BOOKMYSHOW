@@ -119,6 +119,11 @@ import { useParams } from "react-router-dom";
                       >
                         Man
                       </button>
+                      <button
+                        className={`px-4 py-1 border border-gray-200 rounded-lg bg-white`}
+                      >
+                        Trans Person
+                      </button>
                     </div>
                   </div>
                   <div>

@@ -16,9 +16,9 @@ export const formatedTodayDate = () => {
 };
 
 export const seatTypePrices = {
-  PREMIUM: 510,
-  EXECUTIVE: 290,
-  NORMAL: 180,
+  PREMIUM: 350,
+  EXECUTIVE: 200,
+  NORMAL: 150,
 };
 
 export const getSeatType = (seatId) => {

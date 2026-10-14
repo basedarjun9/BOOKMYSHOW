@@ -1,6 +1,19 @@
 import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useSeatContext } from "../../context/SeatContext";
+import { useAuth } from "../../context/AuthContext";
 
-const Footer = ({ isSelected, selectedSeats }) => {
+const Footer = ({ isSelected, selectedSeats, showData, state }) => {
+  const navigate = useNavigate();
+  const { setShows } = useSeatContext();
+  const { user } = useAuth();
+
+  const handleNavigateToCheckout = () => {
+    setShows(showData);
+
+    navigate(`/shows/${showData._id}/${state}/checkout`);
+  };
+
   return (
     <>
       {isSelected ? (
@@ -11,8 +24,8 @@ const Footer = ({ isSelected, selectedSeats }) => {
           </p>
 
           <button
-            disabled
-            className="bg-gray-400 cursor-not-allowed text-white px-6 py-2 rounded-lg font-semibold"
+            onClick={handleNavigateToCheckout}
+            className="bg-black cursor-pointer text-white px-6 py-2 rounded-lg font-semibold"
           >
             Proceed
           </button>
@@ -24,13 +37,11 @@ const Footer = ({ isSelected, selectedSeats }) => {
           </p>
 
           <div className="flex gap-4 text-xs mt-3">
-            {/* Available */}
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 border rounded-[4px]"></div>
               <p>Available</p>
             </div>
 
-            {/* Occupied */}
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-gray-200 border rounded-[4px] flex items-center justify-center">
                 <small className="-mt-1">x</small>
@@ -38,7 +49,6 @@ const Footer = ({ isSelected, selectedSeats }) => {
               <p>Occupied</p>
             </div>
 
-            {/* Selected */}
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 bg-purple-600 rounded-[4px]"></div>
               <p>Selected</p>

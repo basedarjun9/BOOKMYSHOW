@@ -1,4 +1,4 @@
-import { Routes,Route } from "react-router-dom"
+import { Navigate, Outlet, Route, Routes } from "react-router-dom";
 import Header from "./components/shared/Header"
 import Footer from "./components/shared/Footer"
 import Home from "./pages/Home"
@@ -11,6 +11,13 @@ import Checkout from "./pages/Checkout"
 import { Toaster } from "react-hot-toast";
 import FullScreenLoader from "./components/shared/FullScreenLoader";
 import { useLoadUser } from "./hooks/useLoadUser";
+import { useAuth } from "./context/AuthContext";
+
+
+const PrivateRoute = () => {
+  const { auth }  = useAuth();
+  return auth ? <Outlet /> : <Navigate to="/" replace />;
+}
 
 function  App() {
   
@@ -42,10 +49,12 @@ function  App() {
         <main className="flex-grow">
           <Routes>
            <Route path="/" element={<Home/>}></Route>
-            <Route path="/profile/:id" element={<Profile />} />
              <Route path="/movies" element={<Movies/>}></Route>
              <Route path="/movies/:state/:movieName/:id/ticket" element={<MovieDetails/>}></Route>
-              <Route path="/movies/:movieId/:movieName/:state/theater/:theaterId/show/:showId/seat-layout" element={<SeatLayout />} ></Route>
+               <Route element={<PrivateRoute />}>
+              <Route path="/movies/:movieId/:movieName/:state/theater/:theaterId/show/:showId/seat-layout" element={<SeatLayout />} />
+              <Route path="/profile/:id/:tab" element={<Profile />} />
+              </Route>
               <Route path="/shows/:showId/:state/checkout" element={<Checkout/>}> </Route>
           </Routes>
         </main>

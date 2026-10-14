@@ -19,7 +19,7 @@ const Header = () => {
     console.log("User ID:", user?._id);
 
     if (user?._id) {
-      navigate(`/profile/${user._id}`);
+      navigate(`/profile/${user._id}/profile`);
     } else {
       console.error("User ID is missing. Please check AuthContext.");
     }
@@ -51,7 +51,7 @@ const Header = () => {
                     <span
                 onClick={() => {
                   if (user?._id) {
-                    navigate(`/profile/${user._id}`);
+                    navigate(`/profile/${user._id}/profile`);
                   } else {
                     console.error("User ID is missing:", user);
                   }

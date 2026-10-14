@@ -44,6 +44,7 @@ const StepAccountCreation = () => {
 
       <button
         type="submit"
+        onClick={handleActivateAccount}
         className="w-full cursor-pointer text-white bg-black py-2 rounded-md text-lg hover:bg-gray-800 transition"
       >
         Create Account
