@@ -5,6 +5,7 @@ import cookieParser from "cookie-parser";
 import "./config/redis"
 import http from 'http'
 import { Server } from "socket.io";
+import { registerSocketHandlers } from "./socket/sockethandlers";
 
 app.use(cookieParser());
 
@@ -27,6 +28,7 @@ const startServer = async () => {
 
  io.on("connection", (socket)=>{
   console.log("✅User Connected:", socket.id)
+  registerSocketHandlers(socket,io)
 
   socket.on("disconnect",(reason)=>{
     console.log("❌User disconnected:", socket.id,"Reason", reason)
