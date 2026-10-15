@@ -1,4 +1,4 @@
-import React, { use, useEffect } from "react";
+import React from "react";
 import { tabs } from "../utils/constants";
 import { IoIosLogOut, IoMdAdd } from "react-icons/io";
 import { FiEdit } from "react-icons/fi";
@@ -10,8 +10,9 @@ import { useParams } from "react-router-dom";
 
   const { tab } = useParams();
 
-
-  const [activeTab, setActiveTab] = React.useState("profile");
+const [activeTab, setActiveTab] = React.useState(
+  tab === "booking" || tab === "orders" ? "Your Orders" : "Profile"
+);
   const { user, logoutRequest } = useAuth();
 
   const handleLogout = () => {
@@ -41,7 +42,7 @@ import { useParams } from "react-router-dom";
       <div className="min-h-screen py-10 px-4 bg-gray-100">
         <div className="max-w-6xl mx-auto">
           {/* Profile Section */}
-          {activeTab === "profile" && (
+          {activeTab === "Profile" && (
             <>
               {/* Headers */}
               <div className="bg-gradient-to-r from-gray-800 to-[#f74565] rounded-t-md px-6 py-6 flex items-center gap-6 text-white">
@@ -149,7 +150,7 @@ import { useParams } from "react-router-dom";
           )}
 
             {/* Bookings Section */}
-            {activeTab === "booking" && <BookingHistory />}
+            {activeTab === "Your Orders" && <BookingHistory />}
         </div>
       </div>
     </>

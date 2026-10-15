@@ -53,7 +53,7 @@ function  App() {
              <Route path="/movies/:state/:movieName/:id/ticket" element={<MovieDetails/>}></Route>
                <Route element={<PrivateRoute />}>
               <Route path="/movies/:movieId/:movieName/:state/theater/:theaterId/show/:showId/seat-layout" element={<SeatLayout />} />
-              <Route path="/profile/:id/:tab" element={<Profile />} />
+              <Route path="/profile/:id/:tab?" element={<Profile />} />
               </Route>
               <Route path="/shows/:showId/:state/checkout" element={<Checkout/>}> </Route>
           </Routes>
