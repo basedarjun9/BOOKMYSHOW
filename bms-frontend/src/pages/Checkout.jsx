@@ -86,6 +86,18 @@ const Checkout = () => {
           console.log(response);
           verifyPaymentMutation.mutate(response);
 
+            const reqData = {
+            showId: showData._id,
+            seats: selectedSeats,
+            paymentId: response.razorpay_payment_id,
+            bookingFee: {
+              ticketPrice: base,
+              total : total,
+              convenience: tax
+            }
+          }
+
+          bookTicketMutation.mutate(reqData);
         },
         prefill: {
           name: user?.name,
@@ -109,6 +121,23 @@ const Checkout = () => {
     onSuccess: (data) => {
       toast.success(data?.data.message)
       navigate("/profile/${user._id}")
+    },
+    onError: (err) => {
+      console.log(err);
+    }
+  })
+
+  const bookTicketMutation = useMutation({
+    mutationFn : (reqData) => bookShow(reqData),
+    onSuccess: (data) => {
+      console.log(data);
+      toast.success(data?.data?.message);
+      socket.emit("unlock-seats", {
+        showId: showData._id,
+        userId: user._id,
+        seatIds: selectedSeats
+      })
+      navigate(`/profile/${user._id}/booking`);
     },
     onError: (err) => {
       console.log(err);

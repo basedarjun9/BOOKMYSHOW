@@ -6,7 +6,7 @@ import { TheaterModel } from "../modules/theater/theater.model";
 import { config } from "../config/config";
 
 mongoose
-  .connect(config.databaseUrl as string)
+  .connect(config.databaseReplicaSet as string)
   .then(async () => {
     console.log("Connected to MongoDB ✅");
 

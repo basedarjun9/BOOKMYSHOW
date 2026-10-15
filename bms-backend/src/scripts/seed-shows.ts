@@ -247,7 +247,7 @@ const newShow = new ShowModel({
 // ======================================================
 
 mongoose
-  .connect(config.databaseUrl as string)
+  .connect(config.databaseReplicaSet as string)
 
   .then(async () => {
 

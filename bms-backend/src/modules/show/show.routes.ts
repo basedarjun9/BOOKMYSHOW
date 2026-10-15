@@ -9,6 +9,5 @@ router.get("/", ShowController.getShowsByMovieDateLocation);
 
 router.get("/:id", ShowController.getShowById);
 
-router.put("/:showId", ShowController.updateSeatStatus);
 
 export default router;
